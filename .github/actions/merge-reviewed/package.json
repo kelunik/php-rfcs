@@ -1,0 +1,13 @@
+{
+  "name": "@php/php-rfcs-merge-reviewed",
+  "version": "1.0.0",
+  "description": "Merges RFC pull requests if approved by an RFC author.",
+  "main": "index.js",
+  "keywords": ["php"],
+  "author": "Niklas Keller <kelunik@php.net>",
+  "license": "MIT",
+  "dependencies": {
+    "@actions/core": "^1.2.6",
+    "@actions/github": "^4.0.0"
+  }
+}

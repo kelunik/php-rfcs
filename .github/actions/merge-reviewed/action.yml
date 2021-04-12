@@ -1,0 +1,7 @@
+name: 'Merge reviewed'
+description: 'Merges RFC pull requests if approved by an RFC author.'
+inputs:
+outputs:
+runs:
+    using: 'node12'
+    main: 'index.js'
