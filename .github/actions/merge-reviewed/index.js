@@ -1,3 +1,6 @@
+console.log('Starting up...');
+console.log(process.cwd());
+
 const core = require('@actions/core');
 const github = require('@actions/github');
 
