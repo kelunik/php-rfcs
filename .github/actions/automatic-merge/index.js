@@ -95,9 +95,7 @@ const { Octokit } = require('@octokit/action');
         }
 
         if (allowMerge) {
-            const mergeUrl = pullRequest._links.self + '/merge';
-
-            console.log(mergeUrl);
+            const mergeUrl = pullRequest._links.self.href + '/merge';
 
             // https://docs.github.com/en/rest/reference/pulls#merge-a-pull-request
             const { data } = await octokit.request('PUT ' + mergeUrl, {
