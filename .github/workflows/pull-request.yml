@@ -1,0 +1,21 @@
+name: 'Pull request'
+on:
+  pull_request_target:
+    branches:
+      - master
+    types: [ opened, reopened, synchronize, ready_for_review, edited ]
+
+# This workflow has read / write access, but the PR content is untrusted
+# See https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Save pull request number
+        run: |
+          mkdir -p ./pr
+          echo ${{ github.event.pull_request.number }} > ./pr/NR
+      - uses: actions/upload-artifact@v2
+        with:
+          name: pr
+          path: pr/

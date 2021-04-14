@@ -1,4 +1,4 @@
-name: 'Merge reviewed'
+name: 'Automatic merge'
 description: 'Merges RFC pull requests if approved by an RFC author.'
 runs:
     using: 'node12'

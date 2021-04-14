@@ -1,0 +1,48 @@
+name: 'Automatic merge'
+on:
+  workflow_run:
+    workflows: [ 'Review', 'Pull request' ]
+    types:
+      - completed
+
+# This workflow has read / write access, but the PR content is untrusted
+# See https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    if: >
+      ${{ github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: 'Download artifact'
+        uses: actions/github-script@v3.1.0
+        with:
+          script: |
+            var artifacts = await github.actions.listWorkflowRunArtifacts({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               run_id: ${{github.event.workflow_run.id }},
+            });
+
+            var matchArtifact = artifacts.data.artifacts.filter((artifact) => {
+              return artifact.name == "pr"
+            })[0];
+
+            var download = await github.actions.downloadArtifact({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               artifact_id: matchArtifact.id,
+               archive_format: 'zip',
+            });
+
+            require('fs').writeFileSync('${{github.workspace}}/pr.zip', Buffer.from(download.data));
+      - run: unzip pr.zip
+
+      - name: 'Checkout'
+        uses: actions/checkout@v1
+        with:
+          ref: master
+
+      - name: 'Check'
+        uses: ./.github/actions/automatic-merge
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
