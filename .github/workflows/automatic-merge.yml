@@ -43,7 +43,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            console.log('::set-output name=PULL_REQUEST_NUMBER::' + Number(fs.readFileSync('./NR')));
+            console.log('::set-output name=PULL_REQUEST_NUMBER::' + Number(require('fs').readFileSync('./NR')));
 
       - name: 'Checkout'
         uses: actions/checkout@v1
