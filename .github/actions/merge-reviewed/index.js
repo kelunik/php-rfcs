@@ -7,6 +7,18 @@ const { Octokit } = require('@octokit/action');
     try {
         console.log('Checking review...');
 
+        if (github.context.payload.pull_request.state !== 'open') {
+            console.log('Pull request is no longer open.');
+
+            return;
+        }
+
+        if (github.context.payload.pull_request.draft) {
+            console.log('Pull request is still a draft.');
+
+            return;
+        }
+
         const octokit = new Octokit;
 
         const base = github.context.payload.pull_request.base.sha;
@@ -19,14 +31,15 @@ const { Octokit } = require('@octokit/action');
         // https://docs.github.com/en/rest/reference/repos#compare-two-commits
         const { data } = await octokit.request('GET ' + compareUrl);
 
+        let allowMerge = true;
+
         for (const file of data.files) {
             const filename = file.filename;
             const status = file.status;
 
             if (!filename.startsWith('rfcs/') || !filename.endsWith('.md')) {
-                // Don't auto-merge non-rfcs
-                // TODO: Don't error but succeed without action
-                throw new Error("Auto-merge is only enabled for RFCs");
+                allowMerge = false;
+                continue;
             }
 
             if (status !== 'added') {
@@ -42,13 +55,28 @@ const { Octokit } = require('@octokit/action');
                 const reviewer = github.context.payload.review.user.login;
 
                 if (!fileAuthors.includes(pullRequestUser)) {
+                    allowMerge = false;
                     console.log(pullRequestUser + ' is not an author of ' + filename);
                 }
 
                 if (github.context.payload.review.state === 'approved' && !fileAuthors.includes(reviewer)) {
+                    allowMerge = false;
                     console.log(reviewer + ' is not an author of ' + filename);
                 }
             }
+        }
+
+        if (allowMerge) {
+            // https://docs.github.com/en/rest/reference/pulls#merge-a-pull-request
+            const { data } = await octokit.request('PUT ' + github.context.payload.pull_request._links.self + '/merge', {
+                sha: head,
+                commit_title: 'Merge #' + github.context.payload.pull_request.number,
+                merge_method: 'squash'
+            });
+
+            console.log(JSON.stringify(data));
+        } else {
+            console.log('Merge not allowed.');
         }
     } catch (error) {
         core.setFailed(error.message);
