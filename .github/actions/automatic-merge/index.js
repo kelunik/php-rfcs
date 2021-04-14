@@ -13,10 +13,8 @@ const { Octokit } = require('@octokit/action');
         const repository = github.context.payload.repository.name;
         const number = Number(core.getInput('PULL_REQUEST_NUMBER', { required: true }));
 
-        const { pullRequest } = await octokit.request('GET /repos/' + owner + '/' + repository + '/pulls/' + number);
-        const { pullRequestReviews } = await octokit.request('GET /repos/' + owner + '/' + repository + '/pulls/' + number + '/reviews');
-
-        console.log(JSON.stringify(pullRequest));
+        const { data: pullRequest } = await octokit.request('GET /repos/' + owner + '/' + repository + '/pulls/' + number);
+        const { data: pullRequestReviews } = await octokit.request('GET /repos/' + owner + '/' + repository + '/pulls/' + number + '/reviews');
 
         if (pullRequest.state !== 'open') {
             console.log('Pull request is no longer open.');
