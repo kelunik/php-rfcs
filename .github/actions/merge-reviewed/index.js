@@ -54,14 +54,12 @@ const { Octokit } = require('@octokit/action');
                 const pullRequestUser = github.context.payload.pull_request.user.login;
                 const reviewer = github.context.payload.review.user.login;
 
-                if (!fileAuthors.includes(pullRequestUser)) {
-                    allowMerge = false;
-                    console.log(pullRequestUser + ' is not an author of ' + filename);
-                }
+                const isAuthorized = fileAuthors.includes(pullRequestUser)
+                    || github.context.payload.review.state === 'approved' && fileAuthors.includes(reviewer)
 
-                if (github.context.payload.review.state === 'approved' && !fileAuthors.includes(reviewer)) {
+                if (!isAuthorized) {
                     allowMerge = false;
-                    console.log(reviewer + ' is not an author of ' + filename);
+                    console.log(pullRequestUser + ' is not authorized for ' + filename);
                 }
             }
         }
