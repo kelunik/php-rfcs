@@ -12,7 +12,7 @@ const { Octokit } = require('@octokit/action');
 
         const owner = github.context.payload.repository.owner.login;
         const repository = github.context.payload.repository.name;
-        const number = Number(fs.readFileSync('./NR'));
+        const number = Number(core.getInput('PULL_REQUEST_NUMBER', { required: true }));
 
         const { pullRequest } = await octokit.request('GET /repos/' + owner + '/' + repository + '/pulls/' + number);
         const { pullRequestReviews } = await octokit.request('GET /repos/' + owner + '/' + repository + '/pulls/' + number + '/reviews');
