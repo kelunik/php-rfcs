@@ -16,6 +16,8 @@ const { Octokit } = require('@octokit/action');
         const { pullRequest } = await octokit.request('GET /repos/' + owner + '/' + repository + '/pulls/' + number);
         const { pullRequestReviews } = await octokit.request('GET /repos/' + owner + '/' + repository + '/pulls/' + number + '/reviews');
 
+        console.log(JSON.stringify(pullRequest));
+
         if (pullRequest.state !== 'open') {
             console.log('Pull request is no longer open.');
 
@@ -107,6 +109,6 @@ const { Octokit } = require('@octokit/action');
             console.log('✖ Merge not allowed.');
         }
     } catch (error) {
-        core.setFailed(error.message);
+        core.setFailed(error.message + "\n\n" + error.stack);
     }
 })();
