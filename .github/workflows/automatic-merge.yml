@@ -37,6 +37,14 @@ jobs:
             require('fs').writeFileSync('${{github.workspace}}/pr.zip', Buffer.from(download.data));
       - run: unzip pr.zip
 
+      - name: 'Store pull request number'
+        uses: actions/github-script@v3
+        id: 'store_pull_request_number'
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            console.log('::set-output name=PULL_REQUEST_NUMBER::' + Number(fs.readFileSync('./NR')));
+
       - name: 'Checkout'
         uses: actions/checkout@v1
         with:
@@ -44,5 +52,7 @@ jobs:
 
       - name: 'Check'
         uses: ./.github/actions/automatic-merge
+        with:
+          PULL_REQUEST_NUMBER: ${{ steps.store_pull_request_number.PULL_REQUEST_NUMBER }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
