@@ -53,6 +53,6 @@ jobs:
       - name: 'Check'
         uses: ./.github/actions/automatic-merge
         with:
-          PULL_REQUEST_NUMBER: ${{ steps.store_pull_request_number.PULL_REQUEST_NUMBER }}
+          PULL_REQUEST_NUMBER: ${{ steps.store_pull_request_number.outputs.PULL_REQUEST_NUMBER }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
