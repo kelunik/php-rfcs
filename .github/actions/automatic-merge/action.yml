@@ -1,0 +1,9 @@
+name: 'Automatic merge'
+description: 'Merges RFC pull requests if approved by an RFC author.'
+inputs:
+  PULL_REQUEST_NUMBER:
+    description: 'Pull request number'
+    required: true
+runs:
+  using: 'node12'
+  main: 'index.js'

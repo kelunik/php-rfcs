@@ -1,0 +1,58 @@
+name: 'Automatic merge'
+on:
+  workflow_run:
+    workflows: [ 'Review', 'Pull request' ]
+    types:
+      - completed
+
+# This workflow has read / write access, but the PR content is untrusted
+# See https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    if: >
+      ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: 'Download artifact'
+        uses: actions/github-script@v3.1.0
+        with:
+          script: |
+            var artifacts = await github.actions.listWorkflowRunArtifacts({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               run_id: ${{github.event.workflow_run.id }},
+            });
+
+            var matchArtifact = artifacts.data.artifacts.filter((artifact) => {
+              return artifact.name == "pr"
+            })[0];
+
+            var download = await github.actions.downloadArtifact({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               artifact_id: matchArtifact.id,
+               archive_format: 'zip',
+            });
+
+            require('fs').writeFileSync('${{github.workspace}}/pr.zip', Buffer.from(download.data));
+      - run: unzip pr.zip
+
+      - name: 'Store pull request number'
+        uses: actions/github-script@v3
+        id: 'store_pull_request_number'
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            console.log('::set-output name=PULL_REQUEST_NUMBER::' + Number(require('fs').readFileSync('./NR')));
+
+      - name: 'Checkout'
+        uses: actions/checkout@v1
+        with:
+          ref: master
+
+      - name: 'Check'
+        uses: ./.github/actions/automatic-merge
+        with:
+          PULL_REQUEST_NUMBER: ${{ steps.store_pull_request_number.outputs.PULL_REQUEST_NUMBER }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

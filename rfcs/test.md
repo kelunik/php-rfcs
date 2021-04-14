@@ -1,3 +1,6 @@
+---
+authors: ['trowski']
+---
 # hello world
 
 # goodbye
